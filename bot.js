@@ -111,11 +111,17 @@ accountInput.on('click', () => accountInput.focus());
 passwordInput.on('click', () => passwordInput.focus());
 submitButton.on('click', () => form.submit());
 
-// Focus handling
-accountInput.focus();
-screen.append(form);
-screen.append(logBox);
-screen.render();
+//Auto-login if credentials exist, otherwise show login form
+if (fs.existsSync(credentialsFile)) {
+    logMessage('Credentials file found. Skipping login form.');
+    form.hide();
+    loginToSteam();
+} else {
+    accountInput.focus();
+    screen.append(form);
+    screen.append(logBox);
+    screen.render();
+}
 
 // Fix Steam Guard window
 function createSteamGuardWindow(callback) {
@@ -164,17 +170,16 @@ function createSteamGuardWindow(callback) {
         }
     });
 
-    // ✅ FIXED: Ensure the button only submits ONCE
     let submitted = false;
 
     function submitCode() {
-        if (submitted) return; // Prevent double submission
+        if (submitted) return;
         submitted = true;
 
         let code = guardInput.getValue().trim();
         if (!code) {
             logMessage('Steam Guard code cannot be empty.');
-            submitted = false; // Allow resubmission if empty
+            submitted = false;
             return;
         }
 
@@ -182,7 +187,6 @@ function createSteamGuardWindow(callback) {
         screen.remove(guardForm);
         screen.render();
 
-        // ✅ FIX: Only send the Steam Guard code, DO NOT call logOn() again
         callback(code);
     }
 
@@ -200,11 +204,11 @@ function createSteamGuardWindow(callback) {
 // Function to log into Steam
 function loginToSteam() {
     logMessage('Attempting to log in...');
-    client.logOn(logOnOptions); // ✅ This should only be called once
+    client.logOn(logOnOptions);
 
     client.on('steamGuard', (domain, callback) => {
         logMessage('Steam Guard code required.');
-        createSteamGuardWindow(callback); // ✅ This only asks for the code, doesn't call logOn()
+        createSteamGuardWindow(callback);
     });
 
     client.on('loggedOn', () => {
@@ -212,7 +216,6 @@ function loginToSteam() {
         client.setPersona(SteamUser.EPersonaState.Online);
         client.gamesPlayed([730]);
 
-        // ✅ FIXED: Call the correct function
         showGameWindow();
     });
 
@@ -226,8 +229,8 @@ function loginToSteam() {
 }
 
 // Function to display game status window
-function showGameWindow() {  // FIXED: This function is now correctly used
-    screen.children.forEach(child => screen.remove(child)); // Remove previous UI elements
+function showGameWindow() {
+    screen.children.forEach(child => screen.remove(child));
 
     let gameBox = blessed.box({
         parent: screen,
@@ -238,7 +241,7 @@ function showGameWindow() {  // FIXED: This function is now correctly used
         border: 'line',
         label: 'Bot is Playing Games',
         padding: 1,
-        content: 'Currently playing: CS:GO (App ID: 730)', // Modify dynamically if needed
+        content: 'Currently playing: CS:GO (App ID: 730)',
         align: 'center',
         style: { fg: 'green', border: { fg: 'white' } }
     });
