@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const client = new SteamUser();
 const credentialsFile = 'steam_credentials.json';
+const gamesFile = 'games_to_play.json';
 
 let logOnOptions = {};
 if (fs.existsSync(credentialsFile)) {
@@ -16,58 +17,6 @@ if (fs.existsSync(credentialsFile)) {
 const screen = blessed.screen({
     smartCSR: true,
     title: 'Steam Bot Terminal UI'
-});
-
-// Main form box
-const form = blessed.form({
-    parent: screen,
-    keys: true,
-    mouse: true,
-    left: 'center',
-    top: 'center',
-    width: '50%',
-    height: '50%',
-    border: 'line',
-    label: 'Login to Steam',
-    padding: 1
-});
-
-// Username input
-const accountInput = blessed.textbox({
-    parent: form,
-    label: ' Account Name: ',
-    top: 2,
-    left: 2,
-    width: '90%',
-    height: 3,
-    inputOnFocus: true,
-    border: { type: 'line' },
-    style: { fg: 'white', border: { fg: 'cyan' } }
-});
-
-// Password input
-const passwordInput = blessed.textbox({
-    parent: form,
-    label: ' Password: ',
-    top: 6,
-    left: 2,
-    width: '90%',
-    height: 3,
-    inputOnFocus: true,
-    censor: true,
-    border: { type: 'line' },
-    style: { fg: 'white', border: { fg: 'cyan' } }
-});
-
-// Login button
-const submitButton = blessed.button({
-    parent: form,
-    content: ' Login ',
-    top: 10,
-    left: 'center',
-    shrink: true,
-    border: 'line',
-    style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
 });
 
 // Log box to display bot activity
@@ -88,45 +37,101 @@ const logBox = blessed.box({
 // Function to append logs
 function logMessage(message) {
     logBox.setContent(logBox.getContent() + `\n${message}`);
-    logBox.setScrollPerc(100); // Auto-scroll to bottom
+    logBox.setScrollPerc(100);
     screen.render();
 }
 
-// Handle login
-submitButton.on('press', () => {
-    form.submit();
-});
-
-// Handle form submission
-form.on('submit', () => {
-    logOnOptions.accountName = accountInput.getValue();
-    logOnOptions.password = passwordInput.getValue();
-    fs.writeFileSync(credentialsFile, JSON.stringify(logOnOptions));
-    form.hide();
-    loginToSteam();
-});
-
-// Make input fields clickable
-accountInput.on('click', () => accountInput.focus());
-passwordInput.on('click', () => passwordInput.focus());
-submitButton.on('click', () => form.submit());
-
-//Auto-login if credentials exist, otherwise show login form
+// Auto-login if credentials exist
 if (fs.existsSync(credentialsFile)) {
     logMessage('Credentials file found. Skipping login form.');
-    form.hide();
     loginToSteam();
 } else {
+    showLoginForm();
+}
+
+// Function to show login form
+function showLoginForm() {
+    let form = blessed.form({
+        parent: screen,
+        keys: true,
+        mouse: true,
+        left: 'center',
+        top: 'center',
+        width: '50%',
+        height: '50%',
+        border: 'line',
+        label: 'Login to Steam',
+        padding: 1
+    });
+
+    let accountInput = blessed.textbox({
+        parent: form,
+        label: ' Account Name: ',
+        top: 2,
+        left: 2,
+        width: '90%',
+        height: 3,
+        inputOnFocus: true,
+        border: { type: 'line' },
+        style: { fg: 'white', border: { fg: 'cyan' } }
+    });
+
+    let passwordInput = blessed.textbox({
+        parent: form,
+        label: ' Password: ',
+        top: 6,
+        left: 2,
+        width: '90%',
+        height: 3,
+        inputOnFocus: true,
+        censor: true,
+        border: { type: 'line' },
+        style: { fg: 'white', border: { fg: 'cyan' } }
+    });
+
+    let submitButton = blessed.button({
+        parent: form,
+        content: ' Login ',
+        top: 10,
+        left: 'center',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+    });
+
+    function submitLogin() {
+        let account = accountInput.getValue().trim();
+        let password = passwordInput.getValue().trim();
+
+        if (!account || !password) {
+            logMessage('Account name and password cannot be empty.');
+            return;
+        }
+
+        logMessage('Submitting login credentials...');
+        logOnOptions.accountName = account;
+        logOnOptions.password = password;
+        fs.writeFileSync(credentialsFile, JSON.stringify(logOnOptions));
+
+        screen.remove(form);
+        screen.render();
+        loginToSteam();
+    }
+
+    submitButton.on('press', submitLogin);
+    accountInput.key('enter', submitLogin);
+    passwordInput.key('enter', submitLogin);
+
     accountInput.focus();
     screen.append(form);
-    screen.append(logBox);
     screen.render();
 }
 
-// Fix Steam Guard window
+// Function to create Steam Guard window
 function createSteamGuardWindow(callback) {
-    screen.remove(form); // Remove the login form
-
     let guardForm = blessed.form({
         parent: screen,
         keys: true,
@@ -161,40 +166,25 @@ function createSteamGuardWindow(callback) {
         border: 'line',
         keys: true,
         mouse: true,
-        focusable: true,
         padding: { left: 1, right: 1 },
-        style: {
-            fg: 'green',
-            border: { fg: 'white' },
-            focus: { bg: 'blue' }
-        }
+        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
     });
 
-    let submitted = false;
-
     function submitCode() {
-        if (submitted) return;
-        submitted = true;
-
         let code = guardInput.getValue().trim();
         if (!code) {
             logMessage('Steam Guard code cannot be empty.');
-            submitted = false;
             return;
         }
 
         logMessage(`Steam Guard code entered: ${code}`);
         screen.remove(guardForm);
         screen.render();
-
         callback(code);
     }
 
     submitGuardButton.on('press', submitCode);
     guardInput.key('enter', submitCode);
-
-    guardInput.on('click', () => guardInput.focus());
-    submitGuardButton.on('click', submitCode);
 
     guardInput.focus();
     screen.append(guardForm);
@@ -212,11 +202,9 @@ function loginToSteam() {
     });
 
     client.on('loggedOn', () => {
-        logMessage('Successfully logged in! Playing games...');
+        logMessage('Successfully logged in!');
         client.setPersona(SteamUser.EPersonaState.Online);
-        client.gamesPlayed([730]);
-
-        showGameWindow();
+        checkGamesToPlay();
     });
 
     client.on('error', (err) => {
@@ -228,56 +216,87 @@ function loginToSteam() {
     });
 }
 
-// Function to display game status window
-function showGameWindow() {
-    screen.children.forEach(child => screen.remove(child));
+// Function to check if games_to_play.json exists
+function checkGamesToPlay() {
+    if (fs.existsSync(gamesFile)) {
+        let games = JSON.parse(fs.readFileSync(gamesFile));
+        startPlayingGames(games);
+    } else {
+        askForGameIDs();
+    }
+}
 
-    let gameBox = blessed.box({
+// Function to show the currently playing games window
+function showCurrentlyPlayingWindow(gameIDs) {
+    let playingBox = blessed.box({
         parent: screen,
-        top: 'center',
+        top: '20%',
         left: 'center',
         width: '50%',
-        height: '30%',
+        height: '40%',
         border: 'line',
-        label: 'Bot is Playing Games',
+        label: 'Currently Playing',
         padding: 1,
-        content: 'Currently playing: CS:GO (App ID: 730)',
-        align: 'center',
-        style: { fg: 'green', border: { fg: 'white' } }
+        content: gameIDs.length > 0 ? gameIDs.join('\n') : 'No games playing',
+        style: { fg: 'white', border: { fg: 'cyan' } }
     });
 
-    let exitButton = blessed.button({
-        parent: screen,
-        content: ' Exit ',
-        top: '80%',
-        left: 'center',
-        shrink: true,
-        border: 'line',
-        style: { fg: 'red', border: { fg: 'white' }, focus: { bg: 'blue' } }
-    });
-
-    exitButton.on('press', () => {
-        client.logOff();
-        logMessage('Exiting Steam bot...');
-        return process.exit(0);
-    });
-
-    screen.append(gameBox);
-    screen.append(exitButton);
-    exitButton.focus();
     screen.render();
 }
 
-// Enable keyboard navigation
-screen.key(['tab'], () => {
-    screen.focusNext();
-});
-screen.key(['S-tab'], () => {
-    screen.focusPrevious();
-});
+// Function to ask user for game IDs
+function askForGameIDs() {
+    let gameInputForm = blessed.form({
+        parent: screen,
+        keys: true,
+        mouse: true,
+        left: 'center',
+        top: 'center',
+        width: '50%',
+        height: '40%',
+        border: 'line',
+        label: 'Enter Game IDs (comma-separated)',
+        padding: 1
+    });
 
-screen.key(['q', 'C-c'], () => {
-    client.logOff();
-    logMessage('Exiting Steam bot...');
-    return process.exit(0);
-});
+    let gameInput = blessed.textbox({
+        parent: gameInputForm,
+        label: ' Game IDs: ',
+        top: 2,
+        left: 2,
+        width: '90%',
+        height: 3,
+        inputOnFocus: true,
+        border: { type: 'line' },
+        style: { fg: 'white', border: { fg: 'cyan' } }
+    });
+
+    function submitGames() {
+        let games = gameInput.getValue().split(',')
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id));
+
+        if (games.length === 0) {
+            logMessage('Invalid input. Please enter valid game IDs.');
+            return;
+        }
+
+        fs.writeFileSync(gamesFile, JSON.stringify(games));
+        logMessage(`Game IDs entered: ${games.join(', ')}`);
+        screen.remove(gameInputForm);
+        screen.render();
+        startPlayingGames(games);
+    }
+
+    gameInput.key('enter', submitGames);
+    gameInput.focus();
+    screen.append(gameInputForm);
+    screen.render();
+}
+
+// Function to start playing games
+function startPlayingGames(gameIDs) {
+    logMessage(`Starting games: ${gameIDs.join(', ')}`);
+    client.gamesPlayed(gameIDs);
+    showCurrentlyPlayingWindow(gameIDs);
+}
