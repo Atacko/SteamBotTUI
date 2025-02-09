@@ -226,7 +226,7 @@ function checkGamesToPlay() {
     }
 }
 
-// Function to show the currently playing games window with an Exit button
+// Function to show the currently playing games window
 function showCurrentlyPlayingWindow(gameIDs) {
     let playingBox = blessed.box({
         parent: screen,
@@ -241,22 +241,69 @@ function showCurrentlyPlayingWindow(gameIDs) {
         style: { fg: 'white', border: { fg: 'cyan' } }
     });
 
-    // Exit button to stop the bot
-    let exitButton = blessed.button({
+    // Quit Games Button
+    let quitGamesButton = blessed.button({
         parent: screen,
-        content: ' Exit Bot ',
-        top: '65%',
-        left: 'center',
+        content: ' Quit Games ',
+        top: '61%', // Placed directly below the currently playing window
+        left: '25%',
         shrink: true,
         border: 'line',
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'red', border: { fg: 'white' }, focus: { bg: 'blue' } }
+        style: { fg: 'yellow', border: { fg: 'white' }, focus: { bg: 'red' } }
     });
 
-    exitButton.on('press', () => {
-        logMessage('Stopping the bot and logging out...');
+    quitGamesButton.on('press', () => {
+        client.gamesPlayed([]); // Stops playing all games
+        logMessage('Stopped playing games.');
+        playingBox.setContent('No games playing');
+        screen.render();
+    });
+
+    // Start Games Button
+    let startGamesButton = blessed.button({
+        parent: screen,
+        content: ' Start Games ',
+        top: '61%', // Placed directly below the currently playing window
+        left: '45%',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+    });
+
+    startGamesButton.on('press', () => {
+        if (fs.existsSync(gamesFile)) {
+            let games = JSON.parse(fs.readFileSync(gamesFile));
+            client.gamesPlayed(games);
+            logMessage(`Resumed playing games: ${games.join(', ')}`);
+            playingBox.setContent(games.length > 0 ? games.join('\n') : 'No games playing');
+            screen.render();
+        } else {
+            logMessage('No game list found.');
+        }
+    });
+
+    // Exit Bot Button
+    let exitBotButton = blessed.button({
+        parent: screen,
+        content: ' Exit Bot ',
+        top: '61%', // Placed directly below the currently playing window
+        left: '65%',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'red', border: { fg: 'white' }, focus: { bg: 'red' } }
+    });
+
+    exitBotButton.on('press', () => {
+        logMessage('Exiting bot...');
         client.logOff();
         process.exit(0);
     });
