@@ -226,7 +226,7 @@ function checkGamesToPlay() {
     }
 }
 
-// Function to show the currently playing games window
+// Function to show the currently playing games window with an Exit button
 function showCurrentlyPlayingWindow(gameIDs) {
     let playingBox = blessed.box({
         parent: screen,
@@ -239,6 +239,26 @@ function showCurrentlyPlayingWindow(gameIDs) {
         padding: 1,
         content: gameIDs.length > 0 ? gameIDs.join('\n') : 'No games playing',
         style: { fg: 'white', border: { fg: 'cyan' } }
+    });
+
+    // Exit button to stop the bot
+    let exitButton = blessed.button({
+        parent: screen,
+        content: ' Exit Bot ',
+        top: '65%',
+        left: 'center',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'red', border: { fg: 'white' }, focus: { bg: 'blue' } }
+    });
+
+    exitButton.on('press', () => {
+        logMessage('Stopping the bot and logging out...');
+        client.logOff();
+        process.exit(0);
     });
 
     screen.render();
@@ -271,6 +291,20 @@ function askForGameIDs() {
         style: { fg: 'white', border: { fg: 'cyan' } }
     });
 
+    // Submit Button
+    let submitButton = blessed.button({
+        parent: gameInputForm,
+        content: ' Submit ',
+        top: 6,
+        left: 'center',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+    });
+
     function submitGames() {
         let games = gameInput.getValue().split(',')
             .map(id => parseInt(id.trim()))
@@ -288,7 +322,9 @@ function askForGameIDs() {
         startPlayingGames(games);
     }
 
+    submitButton.on('press', submitGames);
     gameInput.key('enter', submitGames);
+
     gameInput.focus();
     screen.append(gameInputForm);
     screen.render();
