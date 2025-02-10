@@ -27,6 +27,11 @@ const logBox = blessed.box({
     width: '80%',
     height: '25%',
     border: 'line',
+    style: { 
+        fg: 'green', // This affects the text inside the box, NOT the label
+        border: { fg: 'magenta' }, 
+        label: { fg: 'green' } // This sets the label color
+    },
     label: 'Logs',
     padding: 1,
     scrollable: true,
@@ -60,6 +65,11 @@ function showLoginForm() {
         width: '50%',
         height: '45%',
         border: 'line',
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'magenta' }, 
+            label: { fg: 'green' } // This sets the label color
+        },
         label: 'Login to Steam',
         padding: 1
     });
@@ -73,7 +83,11 @@ function showLoginForm() {
         height: 3,
         inputOnFocus: true,
         border: { type: 'line' },
-        style: { fg: 'white', border: { fg: 'cyan' } }
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'cyan' }, 
+            label: { fg: 'green' } // This sets the label color
+        }
     });
 
     let passwordInput = blessed.textbox({
@@ -86,7 +100,11 @@ function showLoginForm() {
         inputOnFocus: true,
         censor: true,
         border: { type: 'line' },
-        style: { fg: 'white', border: { fg: 'cyan' } }
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'cyan' }, 
+            label: { fg: 'green' } // This sets the label color
+        }
     });
 
     let submitButton = blessed.button({
@@ -99,7 +117,7 @@ function showLoginForm() {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+        style: { fg: 'green', border: { fg: 'cyan' }, focus: { bg: 'blue' } }
     });
 
     function submitLogin() {
@@ -141,6 +159,11 @@ function createSteamGuardWindow(callback) {
         width: '50%',
         height: '40%',
         border: 'line',
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'magenta' }, 
+            label: { fg: 'green' } // This sets the label color
+        },
         label: 'Steam Guard Code',
         padding: 1
     });
@@ -154,7 +177,11 @@ function createSteamGuardWindow(callback) {
         height: 3,
         inputOnFocus: true,
         border: { type: 'line' },
-        style: { fg: 'white', border: { fg: 'cyan' } }
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'cyan' }, 
+            label: { fg: 'green' } // This sets the label color
+        }
     });
 
     let submitGuardButton = blessed.button({
@@ -167,7 +194,7 @@ function createSteamGuardWindow(callback) {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+        style: { fg: 'green', border: { fg: 'cyan' }, focus: { bg: 'blue' } }
     });
 
     function submitCode() {
@@ -238,7 +265,11 @@ function showCurrentlyPlayingWindow(gameIDs) {
         label: 'Currently Playing',
         padding: 1,
         content: gameIDs.length > 0 ? gameIDs.join('\n') : 'No games playing',
-        style: { fg: 'white', border: { fg: 'cyan' } }
+        style: { 
+            fg: 'green', // This affects the text inside the box, NOT the label
+            border: { fg: 'magenta' }, 
+            label: { fg: 'green' } // This sets the label color
+        }
     });
 
     // Start Games Button
@@ -252,7 +283,7 @@ function showCurrentlyPlayingWindow(gameIDs) {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+        style: { fg: 'green', border: { fg: 'cyan' }, focus: { bg: 'blue' } }
     });
 
     startGamesButton.on('press', () => {
@@ -278,7 +309,7 @@ function showCurrentlyPlayingWindow(gameIDs) {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'yellow', border: { fg: 'white' }, focus: { bg: 'red' } }
+        style: { fg: 'yellow', border: { fg: 'cyan' }, focus: { bg: 'red' } }
     });
 
     quitGamesButton.on('press', () => {
@@ -299,7 +330,7 @@ function showCurrentlyPlayingWindow(gameIDs) {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'red', border: { fg: 'white' }, focus: { bg: 'red' } }
+        style: { fg: 'red', border: { fg: 'cyan' }, focus: { bg: 'red' } }
     });
 
     exitBotButton.on('press', () => {
