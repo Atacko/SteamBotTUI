@@ -28,9 +28,9 @@ const logBox = blessed.box({
     height: '25%',
     border: 'line',
     style: { 
-        fg: 'green', // This affects the text inside the box, NOT the label
+        fg: 'green',
         border: { fg: 'magenta' }, 
-        label: { fg: 'green' } // This sets the label color
+        label: { fg: 'green' }
     },
     label: 'Logs',
     padding: 1,
@@ -66,9 +66,9 @@ function showLoginForm() {
         height: '45%',
         border: 'line',
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'magenta' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         },
         label: 'Login to Steam',
         padding: 1
@@ -84,9 +84,9 @@ function showLoginForm() {
         inputOnFocus: true,
         border: { type: 'line' },
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'cyan' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         }
     });
 
@@ -101,9 +101,9 @@ function showLoginForm() {
         censor: true,
         border: { type: 'line' },
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'cyan' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         }
     });
 
@@ -160,9 +160,9 @@ function createSteamGuardWindow(callback) {
         height: '40%',
         border: 'line',
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'magenta' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         },
         label: 'Steam Guard Code',
         padding: 1
@@ -178,9 +178,9 @@ function createSteamGuardWindow(callback) {
         inputOnFocus: true,
         border: { type: 'line' },
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'cyan' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         }
     });
 
@@ -249,7 +249,7 @@ function checkGamesToPlay() {
         let games = JSON.parse(fs.readFileSync(gamesFile));
         startPlayingGames(games);
     } else {
-        askForGameIDs();
+        askForCustomGame();
     }
 }
 
@@ -266,9 +266,9 @@ function showCurrentlyPlayingWindow(gameIDs) {
         padding: 1,
         content: gameIDs.length > 0 ? gameIDs.join('\n') : 'No games playing',
         style: { 
-            fg: 'green', // This affects the text inside the box, NOT the label
+            fg: 'green',
             border: { fg: 'magenta' }, 
-            label: { fg: 'green' } // This sets the label color
+            label: { fg: 'green' }
         }
     });
 
@@ -276,14 +276,14 @@ function showCurrentlyPlayingWindow(gameIDs) {
     let startGamesButton = blessed.button({
         parent: screen,
         content: ' Start Games ',
-        top: '61%', // Placed directly below the currently playing window
-        left: '30%', // Shifted slightly to the right
+        top: '61%',
+        left: '30%',
         shrink: true,
         border: 'line',
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'green', border: { fg: 'cyan' }, focus: { bg: 'blue' } }
+        style: { fg: 'green', border: { fg: 'cyan' } }
     });
 
     startGamesButton.on('press', () => {
@@ -302,35 +302,41 @@ function showCurrentlyPlayingWindow(gameIDs) {
     let quitGamesButton = blessed.button({
         parent: screen,
         content: ' Stop Games ',
-        top: '61%', // Placed directly below the currently playing window
-        left: '46%', // Shifted slightly to the right
+        top: '61%',
+        left: '46%',
         shrink: true,
         border: 'line',
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'yellow', border: { fg: 'cyan' }, focus: { bg: 'red' } }
+        style: { fg: 'yellow', border: { fg: 'cyan' } }
     });
 
     quitGamesButton.on('press', () => {
-        client.gamesPlayed([]); // Stops playing all games
-        logMessage('Stopped playing games.');
+        client.gamesPlayed([]);
+        client.gamesPlayed([0]);
+    
+        setTimeout(() => {
+            client.setPersona(SteamUser.EPersonaState.Online);
+        }, 1000);
+    
+        logMessage('Forced stop: No games should be running now.');
         playingBox.setContent('No games playing');
         screen.render();
-    });
+    });    
 
     // Exit Bot Button
     let exitBotButton = blessed.button({
         parent: screen,
         content: ' Exit Bot ',
-        top: '61%', // Placed directly below the currently playing window
-        left: '62%', // Shifted slightly to the right
+        top: '61%',
+        left: '62%',
         shrink: true,
         border: 'line',
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'red', border: { fg: 'cyan' }, focus: { bg: 'red' } }
+        style: { fg: 'red', border: { fg: 'cyan' } }
     });
 
     exitBotButton.on('press', () => {
@@ -342,8 +348,101 @@ function showCurrentlyPlayingWindow(gameIDs) {
     screen.render();
 }
 
+function askForCustomGame() {
+    let customGameForm = blessed.form({
+        parent: screen,
+        keys: true,
+        mouse: true,
+        left: 'center',
+        top: 'center',
+        width: '50%',
+        height: '40%',
+        border: 'line',
+        style: { 
+            fg: 'green',
+            border: { fg: 'magenta' }, 
+            label: { fg: 'green' }
+        },
+        label: 'Add a Custom Game?',
+        padding: 1
+    });
+
+    let customGameInput = blessed.textbox({
+        parent: customGameForm,
+        label: ' Custom Game Name: ',
+        top: 2,
+        left: 2,
+        width: '90%',
+        height: 3,
+        inputOnFocus: true,
+        border: { type: 'line' },
+        style: { 
+            fg: 'green',
+            border: { fg: 'cyan' }, 
+            label: { fg: 'green' }
+        }
+    });
+
+    let submitButton = blessed.button({
+        parent: customGameForm,
+        content: ' Submit ',
+        top: 6,
+        left: '25%',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'green', border: { fg: 'cyan' }, focus: { bg: 'blue' } }
+    });
+
+    let skipButton = blessed.button({
+        parent: customGameForm,
+        content: ' No Thanks ',
+        top: 6,
+        left: '55%',
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'red', border: { fg: 'cyan' }, focus: { bg: 'red' } }
+    });
+
+    function submitCustomGame() {
+        let customGame = customGameInput.getValue().trim();
+
+        if (customGame) {
+            logMessage(`Custom game added: ${customGame}`);
+            screen.remove(customGameForm);
+            screen.render();
+            askForGameIDs(customGame);
+        } else {
+            logMessage('No custom game entered.');
+            screen.remove(customGameForm);
+            screen.render();
+            askForGameIDs(null);
+        }
+    }
+
+    function skipCustomGame() {
+        logMessage('Skipping custom game addition.');
+        screen.remove(customGameForm);
+        screen.render();
+        askForGameIDs(null);
+    }
+
+    submitButton.on('press', submitCustomGame);
+    skipButton.on('press', skipCustomGame);
+    customGameInput.key('enter', submitCustomGame);
+
+    customGameInput.focus();
+    screen.append(customGameForm);
+    screen.render();
+}
+
 // Function to ask user for game IDs
-function askForGameIDs() {
+function askForGameIDs(customGame) {
     let gameInputForm = blessed.form({
         parent: screen,
         keys: true,
@@ -353,6 +452,11 @@ function askForGameIDs() {
         width: '50%',
         height: '40%',
         border: 'line',
+        style: { 
+            fg: 'green',
+            border: { fg: 'magenta' }, 
+            label: { fg: 'green' }
+        },
         label: 'Enter Game IDs (comma-separated)',
         padding: 1
     });
@@ -366,10 +470,13 @@ function askForGameIDs() {
         height: 3,
         inputOnFocus: true,
         border: { type: 'line' },
-        style: { fg: 'white', border: { fg: 'cyan' } }
+        style: { 
+            fg: 'green',
+            border: { fg: 'cyan' }, 
+            label: { fg: 'green' }
+        },
     });
 
-    // Submit Button
     let submitButton = blessed.button({
         parent: gameInputForm,
         content: ' Submit ',
@@ -380,21 +487,26 @@ function askForGameIDs() {
         keys: true,
         mouse: true,
         padding: { left: 1, right: 1 },
-        style: { fg: 'green', border: { fg: 'white' }, focus: { bg: 'blue' } }
+        style: { fg: 'green', border: { fg: 'cyan' } }
     });
 
     function submitGames() {
         let games = gameInput.getValue().split(',')
-            .map(id => parseInt(id.trim()))
-            .filter(id => !isNaN(id));
+            .map(id => id.trim())
+            .filter(id => id)
+            .map(id => (/^\d+$/.test(id) ? parseInt(id, 10) : id));
 
         if (games.length === 0) {
             logMessage('Invalid input. Please enter valid game IDs.');
             return;
         }
 
-        fs.writeFileSync(gamesFile, JSON.stringify(games));
-        logMessage(`Game IDs entered: ${games.join(', ')}`);
+        if (customGame) {
+            games.unshift(customGame);
+        }
+
+        fs.writeFileSync(gamesFile, JSON.stringify(games, null, 2));
+        logMessage(`Games entered: ${games.join(', ')}`);
         screen.remove(gameInputForm);
         screen.render();
         startPlayingGames(games);
