@@ -286,7 +286,10 @@ function showCurrentlyPlayingWindow(gameIDs) {
         style: { fg: 'green', border: { fg: 'cyan' } }
     });
 
-    startGamesButton.on('press', () => {
+    startGamesButton.on('press', startGames);
+    screen.key(['C-b', 'C-B'], startGames); // Ctrl + B
+
+    function startGames() {
         if (fs.existsSync(gamesFile)) {
             let games = JSON.parse(fs.readFileSync(gamesFile));
             client.gamesPlayed(games);
@@ -296,10 +299,10 @@ function showCurrentlyPlayingWindow(gameIDs) {
         } else {
             logMessage('No game list found.');
         }
-    });
+    }
 
-    // Quit Games Button
-    let quitGamesButton = blessed.button({
+    // Stop Games Button
+    let stopGamesButton = blessed.button({
         parent: screen,
         content: ' Stop Games ',
         top: '61%',
@@ -312,18 +315,21 @@ function showCurrentlyPlayingWindow(gameIDs) {
         style: { fg: 'yellow', border: { fg: 'cyan' } }
     });
 
-    quitGamesButton.on('press', () => {
+    stopGamesButton.on('press', stopGames);
+    screen.key(['C-n', 'C-N'], stopGames); // Ctrl + N
+
+    function stopGames() {
         client.gamesPlayed([]);
         client.gamesPlayed([0]);
-    
+
         setTimeout(() => {
             client.setPersona(SteamUser.EPersonaState.Online);
         }, 1000);
-    
+
         logMessage('Forced stop: No games should be running now.');
         playingBox.setContent('No games playing');
         screen.render();
-    });    
+    }
 
     // Exit Bot Button
     let exitBotButton = blessed.button({
@@ -339,11 +345,14 @@ function showCurrentlyPlayingWindow(gameIDs) {
         style: { fg: 'red', border: { fg: 'cyan' } }
     });
 
-    exitBotButton.on('press', () => {
+    exitBotButton.on('press', exitBot);
+    screen.key(['C-q', 'C-Q'], exitBot); // Ctrl + Q
+
+    function exitBot() {
         logMessage('Exiting bot...');
         client.logOff();
         process.exit(0);
-    });
+    }
 
     screen.render();
 }
@@ -505,7 +514,7 @@ function askForGameIDs(customGame) {
             games.unshift(customGame);
         }
 
-        fs.writeFileSync(gamesFile, JSON.stringify(games, null, 2));
+        fs.writeFileSync(gamesFile, JSON.stringify(games, null, 2)); 
         logMessage(`Games entered: ${games.join(', ')}`);
         screen.remove(gameInputForm);
         screen.render();
@@ -523,6 +532,7 @@ function askForGameIDs(customGame) {
 // Function to start playing games
 function startPlayingGames(gameIDs) {
     logMessage(`Starting games: ${gameIDs.join(', ')}`);
+    logMessage(`If mouse input doesn't work | ctrl+b = Start Games | ctrl+n = Stop Games | ctrl+q = Exit Bot`)
     client.gamesPlayed(gameIDs);
     showCurrentlyPlayingWindow(gameIDs);
 }
