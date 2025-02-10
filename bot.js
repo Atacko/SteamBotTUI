@@ -56,9 +56,9 @@ function showLoginForm() {
         keys: true,
         mouse: true,
         left: 'center',
-        top: 'center',
+        top: '20%',
         width: '50%',
-        height: '50%',
+        height: '45%',
         border: 'line',
         label: 'Login to Steam',
         padding: 1
@@ -241,33 +241,12 @@ function showCurrentlyPlayingWindow(gameIDs) {
         style: { fg: 'white', border: { fg: 'cyan' } }
     });
 
-    // Quit Games Button
-    let quitGamesButton = blessed.button({
-        parent: screen,
-        content: ' Quit Games ',
-        top: '61%', // Placed directly below the currently playing window
-        left: '25%',
-        shrink: true,
-        border: 'line',
-        keys: true,
-        mouse: true,
-        padding: { left: 1, right: 1 },
-        style: { fg: 'yellow', border: { fg: 'white' }, focus: { bg: 'red' } }
-    });
-
-    quitGamesButton.on('press', () => {
-        client.gamesPlayed([]); // Stops playing all games
-        logMessage('Stopped playing games.');
-        playingBox.setContent('No games playing');
-        screen.render();
-    });
-
     // Start Games Button
     let startGamesButton = blessed.button({
         parent: screen,
         content: ' Start Games ',
         top: '61%', // Placed directly below the currently playing window
-        left: '45%',
+        left: '30%', // Shifted slightly to the right
         shrink: true,
         border: 'line',
         keys: true,
@@ -288,12 +267,33 @@ function showCurrentlyPlayingWindow(gameIDs) {
         }
     });
 
+    // Quit Games Button
+    let quitGamesButton = blessed.button({
+        parent: screen,
+        content: ' Stop Games ',
+        top: '61%', // Placed directly below the currently playing window
+        left: '46%', // Shifted slightly to the right
+        shrink: true,
+        border: 'line',
+        keys: true,
+        mouse: true,
+        padding: { left: 1, right: 1 },
+        style: { fg: 'yellow', border: { fg: 'white' }, focus: { bg: 'red' } }
+    });
+
+    quitGamesButton.on('press', () => {
+        client.gamesPlayed([]); // Stops playing all games
+        logMessage('Stopped playing games.');
+        playingBox.setContent('No games playing');
+        screen.render();
+    });
+
     // Exit Bot Button
     let exitBotButton = blessed.button({
         parent: screen,
         content: ' Exit Bot ',
         top: '61%', // Placed directly below the currently playing window
-        left: '65%',
+        left: '62%', // Shifted slightly to the right
         shrink: true,
         border: 'line',
         keys: true,
