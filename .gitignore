@@ -1,3 +1,5 @@
 steam_credentials.json
 package-lock.json
 .DS_Store
+games_to_play.json
+/node_modules
