@@ -12,5 +12,10 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "steam-user": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   }
 }
